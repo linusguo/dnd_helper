@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DnD Helper</title>
+    <link rel="stylesheet" href="dnd_helper.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>
+          Cleric · Grave Domain ·
+          <span
+            class="editable-number"
+            id="clericLevelText"
+            role="button"
+            tabindex="0"
+            title="点击修改等级（1–20）"
+            onclick="editClericLevel()"
+            onkeydown="
+              if (event.key === 'Enter' || event.key === ' ') editClericLevel();
+            "
+            >Lv. <span id="clericLevelValue">6</span></span
+          >
+        </h1>
+        <div class="sub">D&amp;D 5.5e / 2024 规则</div>
+      </div>
+      <div class="inline header-actions">
+        <button id="nextTurn" class="primary">开始回合</button
+        ><button id="resetTurn">重置本回合</button
+        ><button id="shortRestBtn" class="rest-btn">短休</button
+        ><button id="longRestBtn" class="rest-btn">长休</button>
+      </div>
+    </header>
+    <main>
+      <div class="grid">
+        <section class="card span-12">
+          <div class="section-title">
+            <div class="status-heading">
+              <h2 class="round-heading">
+                第
+                <strong
+                  id="roundNum"
+                  class="editable-number"
+                  role="button"
+                  tabindex="0"
+                  title="点击编辑回合数"
+                  onclick="editRound()"
+                  onkeydown="
+                    if (event.key === 'Enter' || event.key === ' ') editRound();
+                  "
+                  >1</strong
+                >
+                回合
+              </h2>
+            </div>
+            <div class="inline">
+              <span
+                id="acText"
+                class="pill editable-number"
+                role="button"
+                tabindex="0"
+                title="点击编辑 AC"
+                onclick="editStat('ac', 'AC')"
+                onkeydown="
+                  if (event.key === 'Enter' || event.key === ' ')
+                    editStat('ac', 'AC');
+                "
+                >AC —</span
+              ><span
+                class="pill blue editable-number"
+                role="button"
+                tabindex="0"
+                title="点击编辑 Wisdom 加值（可为负数）"
+                onclick="editSignedStat('wisdom', 'Wisdom')"
+                onkeydown="
+                  if (event.key === 'Enter' || event.key === ' ')
+                    editSignedStat('wisdom', 'Wisdom');
+                "
+                >Wisdom <span id="wisdomText">+4</span></span
+              ><span
+                class="pill blue editable-number"
+                role="button"
+                tabindex="0"
+                title="点击编辑 Proficiency 加值"
+                onclick="editStat('proficiency', 'Proficiency')"
+                onkeydown="
+                  if (event.key === 'Enter' || event.key === ' ')
+                    editStat('proficiency', 'Proficiency');
+                "
+                >Proficiency <span id="proficiencyText">+3</span></span
+              ><span class="pill blue" title="自动计算：Wisdom + Proficiency"
+                >Spell Attack <span id="spellAttackText">+7</span></span
+              ><span
+                class="pill blue"
+                title="自动计算：8 + Wisdom + Proficiency"
+                >Spell Save DC <span id="spellSaveDCText">15</span></span
+              >
+            </div>
+          </div>
+          <div class="combat-layout">
+            <div class="resource-stack">
+              <div class="stat hp-stat">
+                <div class="hp-head"><label>HP</label></div>
+                <div class="hp-controls-row">
+                  <strong class="hp-total"
+                    ><span
+                      id="hpCurrentText"
+                      class="editable-number"
+                      role="button"
+                      tabindex="0"
+                      title="点击编辑当前 HP"
+                      onclick="editCurrentHP()"
+                      onkeydown="
+                        if (event.key === 'Enter' || event.key === ' ')
+                          editCurrentHP();
+                      "
+                      >—</span
+                    ><span aria-hidden="true">/</span
+                    ><span
+                      id="hpMaxText"
+                      class="editable-number"
+                      role="button"
+                      tabindex="0"
+                      title="点击编辑最大 HP"
+                      onclick="editMaxHP()"
+                      onkeydown="
+                        if (event.key === 'Enter' || event.key === ' ')
+                          editMaxHP();
+                      "
+                      >—</span
+                    ><span
+                      id="tempHpInline"
+                      class="editable-number"
+                      role="button"
+                      tabindex="0"
+                      title="点击编辑临时 HP"
+                      onclick="editTempHP()"
+                      onkeydown="
+                        if (event.key === 'Enter' || event.key === ' ')
+                          editTempHP();
+                      "
+                    >
+                      + 0</span
+                    ></strong
+                  >
+                  <div class="hp-adjust">
+                    <input
+                      id="hpAmount"
+                      aria-label="HP 调整数值"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value="1"
+                    /><button
+                      class="hp-plus"
+                      title="恢复 HP"
+                      aria-label="恢复 HP"
+                      onclick="adjustHPByInput(1)"
+                    >
+                      +</button
+                    ><button
+                      class="hp-minus"
+                      title="扣除 HP（优先扣临时 HP）"
+                      aria-label="扣除 HP"
+                      onclick="adjustHPByInput(-1)"
+                    >
+                      −
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="stat slot-stat">
+                <div class="slot-heading"><label>Spell Slots</label></div>
+                <div id="slotsText" class="slot-display"></div>
+              </div>
+            </div>
+            <section class="card effects-panel">
+              <div class="section-title">
+                <h2>当前生效效果</h2>
+                <button class="small" onclick="addEffect()">＋ 添加效果</button>
+              </div>
+              <div id="effects" class="effects"></div>
+            </section>
+          </div>
+        </section>
+        <section class="card span-12">
+          <div class="tabs" id="tabs">
+            <button class="tab active" data-tab="Action">Action</button
+            ><button class="tab" data-tab="Bonus Action">Bonus Action</button
+            ><button class="tab" data-tab="Reaction">Reaction</button
+            ><button class="tab" data-tab="Movement">Movement / Other</button>
+          </div>
+          <div id="decisionContent"></div>
+        </section>
+        <section class="card span-12 all-spells-card" id="allSpellsCard">
+          <div
+            class="section-title library-toggle"
+            id="toggleAllSpells"
+            role="button"
+            tabindex="0"
+            aria-expanded="false"
+            aria-controls="allSpellsPanel"
+            title="点击展开或收起全部技能 / 法术"
+          >
+            <div class="library-title-group">
+              <h2>全部技能 / 法术</h2>
+              <div
+                class="sub library-hint library-counter"
+                id="preparedCounter"
+              >
+                准备法术：0/10（戏法、领域常备法术不计入）
+              </div>
+            </div>
+            <span class="library-chevron" aria-hidden="true">⌄</span>
+          </div>
+          <div id="allSpellsPanel" class="all-spells-panel" hidden>
+            <div class="field">
+              <input
+                id="search"
+                placeholder="搜索：Spirit Guardians、治疗、专注、30 ft…"
+              />
+            </div>
+            <div class="tabs" id="filterTabs">
+              <button class="tab active" data-filter="All">全部</button
+              ><button class="tab" data-filter="Cantrip">戏法</button
+              ><button class="tab" data-filter="1st">1 环</button
+              ><button class="tab" data-filter="2nd">2 环</button
+              ><button class="tab" data-filter="3rd">3 环</button
+              ><button class="tab" data-filter="Feature">职业 / 领域能力</button
+              ><button class="tab" data-filter="Attack">攻击</button
+              ><button class="tab" data-filter="Healing">治疗</button
+              ><button class="tab" data-filter="Buff">Buff</button>
+            </div>
+            <div id="allSpells" class="spell-list"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+    <div class="modal-backdrop" id="modalBackdrop">
+      <div class="modal">
+        <div class="modal-head">
+          <div>
+            <div class="sub" id="modalType"></div>
+            <h2 id="modalTitle"></h2>
+          </div>
+        </div>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+    <div
+      class="reset-confirm-backdrop"
+      id="resetConfirmBackdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="resetConfirmTitle"
+    >
+      <div class="reset-confirm-dialog">
+        <h2 id="resetConfirmTitle">确认重置本回合？</h2>
+        <p>
+          本回合的资源使用状态、法术位变化及新增战斗效果将按回合开始状态重置。
+        </p>
+        <div class="reset-confirm-actions">
+          <button id="cancelResetTurn">取消</button>
+          <button id="confirmResetTurn" class="primary">确认重置</button>
+        </div>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script src="dnd_helper.js" defer></script>
+  </body>
+</html>
