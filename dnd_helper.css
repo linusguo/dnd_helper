@@ -1104,8 +1104,6 @@ main {
   white-space: nowrap;
 }
 
-#decisionContent .spell {
-}
 \n\n/* Decision cards must never inherit the prepared-selection highlight used in the library. */
 #decisionContent .spell,
 #decisionContent .spell.prepared-selected,
@@ -1318,10 +1316,17 @@ main {
   width: 100%;
 }
 
-/* Keep the four header action labels centered, including on narrow screens. */
+/* Keep the four header action labels centered and prevent long labels
+   from overflowing their buttons on narrow screens. */
 .header-actions button {
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 9px 4px;
+  line-height: 1.2;
 }
