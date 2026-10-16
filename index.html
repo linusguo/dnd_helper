@@ -30,7 +30,7 @@
         </div>
         <div class="inline header-actions">
           <button id="nextTurn" class="primary">开始回合</button
-          ><button id="resetTurn">重置本回合</button
+          ><button id="resetTurn">重置回合</button
           ><button id="shortRestBtn" class="rest-btn">短休</button
           ><button id="longRestBtn" class="rest-btn">长休</button>
         </div>
@@ -260,13 +260,11 @@
       aria-labelledby="resetConfirmTitle"
     >
       <div class="reset-confirm-dialog">
-        <h2 id="resetConfirmTitle">确认重置本回合？</h2>
-        <p>
-          本回合的资源使用状态、法术位变化及新增战斗效果将按回合开始状态重置。
-        </p>
+        <h2 id="resetConfirmTitle">确认操作？</h2>
+        <p id="resetConfirmMessage"></p>
         <div class="reset-confirm-actions">
+          <button id="confirmResetTurn" class="primary">确认</button>
           <button id="cancelResetTurn">取消</button>
-          <button id="confirmResetTurn" class="primary">确认重置</button>
         </div>
       </div>
     </div>

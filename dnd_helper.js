@@ -2384,17 +2384,56 @@ function toggleResource(k) {
   state.resources[k] = !state.resources[k];
   save();
 }
-function requestResetTurn() {
+let pendingConfirmationAction = null;
+function showFullScreenConfirmation(title, message, confirmLabel, onConfirm) {
   const backdrop = document.getElementById("resetConfirmBackdrop");
+  document.getElementById("resetConfirmTitle").textContent = title;
+  document.getElementById("resetConfirmMessage").textContent = message;
+  document.getElementById("confirmResetTurn").textContent = confirmLabel;
+  pendingConfirmationAction = onConfirm;
   if (backdrop) backdrop.classList.add("open");
+}
+function requestResetTurn() {
+  showFullScreenConfirmation(
+    "确认重置回合？",
+    "本回合的资源使用状态、法术位变化及新增战斗效果将按回合开始状态重置。",
+    "确认重置",
+    resetTurn,
+  );
+}
+function requestStartTurn() {
+  showFullScreenConfirmation(
+    `确认开始第${state.round + 1}回合？`,
+    `确认后将进入第${state.round + 1}回合，并推进所有按回合计时的战斗效果。请确认当前回合的行动已经结束。`,
+    "开始回合",
+    nextTurn,
+  );
+}
+function requestShortRest() {
+  showFullScreenConfirmation(
+    "确认开始短休？",
+    "确认后将进行短休：恢复 1 次 Channel Divinity，并结束按回合计时的战斗效果。随后可以输入通过生命骰恢复的 HP 总量。",
+    "开始短休",
+    shortRest,
+  );
+}
+function requestLongRest() {
+  showFullScreenConfirmation(
+    "确认开始长休？",
+    "确认后将进行长休：恢复 HP、全部法术位和 Channel Divinity，结束当前专注，并清除有回合计时的战斗效果。",
+    "开始长休",
+    longRest,
+  );
 }
 function cancelResetTurn() {
   const backdrop = document.getElementById("resetConfirmBackdrop");
   if (backdrop) backdrop.classList.remove("open");
+  pendingConfirmationAction = null;
 }
 function confirmResetTurn() {
+  const action = pendingConfirmationAction;
   cancelResetTurn();
-  resetTurn();
+  if (typeof action === "function") action();
 }
 function resetTurn() {
   state.spellSlotCastThisTurn = false;
@@ -2419,12 +2458,6 @@ function resetTurn() {
   toast("本回合资源、法术位与新增效果已重置");
 }
 function shortRest() {
-  if (
-    !confirm(
-      "开始短休？短休会恢复 1 次 Channel Divinity，并结束按回合计时的战斗效果。你可以输入短休期间通过生命骰恢复的 HP 总量。",
-    )
-  )
-    return;
   state.spellSlotCastThisTurn = false;
   const heal = askNonNegativeInteger(
     "短休期间通过生命骰恢复的 HP 总量（没有就输入 0）",
@@ -2453,12 +2486,6 @@ function shortRest() {
   );
 }
 function longRest() {
-  if (
-    !confirm(
-      "开始长休？将恢复 HP、全部法术位和 Channel Divinity，结束专注，并清除有回合计时的战斗效果。",
-    )
-  )
-    return;
   state.hp = state.maxHp;
   state.tempHp = 0;
   state.spellSlotCastThisTurn = false;
@@ -2743,9 +2770,13 @@ document.getElementById("toggleAllSpells").addEventListener("keydown", (e) => {
   }
 });
 
-document.getElementById("shortRestBtn").addEventListener("click", shortRest);
-document.getElementById("longRestBtn").addEventListener("click", longRest);
-document.getElementById("nextTurn").addEventListener("click", nextTurn);
+document
+  .getElementById("shortRestBtn")
+  .addEventListener("click", requestShortRest);
+document
+  .getElementById("longRestBtn")
+  .addEventListener("click", requestLongRest);
+document.getElementById("nextTurn").addEventListener("click", requestStartTurn);
 document
   .getElementById("resetTurn")
   .addEventListener("click", requestResetTurn);
