@@ -1,5 +1,4 @@
-# DnD Helper - Cleric Version
-
+# DnD Helper - 5.5e Cleric
 Copyright 2026 Linus Guo
 
 Email: guolinus@gmail.com
