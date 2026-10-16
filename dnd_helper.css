@@ -27,14 +27,8 @@ body {
     sans-serif;
 }
 header {
-  padding: 22px max(18px, calc((100% - 1180px) / 2 + 18px));
-  padding-right: max(18px, calc((100% - 1180px) / 2 + 18px));
+  padding: 22px 0;
   border-bottom: 1px solid var(--line);
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  align-items: center;
-  flex-wrap: wrap;
 }
 h1 {
   font-size: 22px;
@@ -385,6 +379,12 @@ main {
 .header-actions {
   justify-content: flex-end;
   flex-wrap: wrap;
+  width: min(100%, 520px);
+}
+.header-actions button {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: nowrap;
 }
 .rest-btn {
   border-color: #648f7a;
@@ -1104,6 +1104,8 @@ main {
   white-space: nowrap;
 }
 
+#decisionContent .spell {
+}
 \n\n/* Decision cards must never inherit the prepared-selection highlight used in the library. */
 #decisionContent .spell,
 #decisionContent .spell.prepared-selected,
@@ -1290,4 +1292,28 @@ main {
 }
 .reset-confirm-actions button {
   min-width: 112px;
+}
+
+/* Separate character stats row above the round card */
+.stat-summary-row {
+  grid-column: span 12;
+  min-width: 0;
+}
+.stat-summary-row > .inline {
+  width: 100%;
+  justify-content: flex-end;
+}
+
+/* Align header text and actions to the same content grid as the cards */
+.header-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 34px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
 }

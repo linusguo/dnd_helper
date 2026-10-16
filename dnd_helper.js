@@ -1652,7 +1652,7 @@ function render() {
   document.getElementById("hpMaxText").textContent = state.maxHp;
   document.getElementById("tempHpInline").textContent =
     ` + ${state.tempHp || 0}`;
-  document.getElementById("acText").textContent = `AC ${state.ac}`;
+  document.getElementById("acText").textContent = `Armor Class ${state.ac}`;
   document.getElementById("spellSaveDCText").textContent =
     getComputedStats().spellSaveDC ?? 15;
   const spellAttack = Number.isSafeInteger(
