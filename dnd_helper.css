@@ -1104,6 +1104,8 @@ main {
   white-space: nowrap;
 }
 
+#decisionContent .spell {
+}
 \n\n/* Decision cards must never inherit the prepared-selection highlight used in the library. */
 #decisionContent .spell,
 #decisionContent .spell.prepared-selected,
@@ -1314,4 +1316,12 @@ main {
   align-items: center;
   flex-wrap: wrap;
   width: 100%;
+}
+
+/* Keep the four header action labels centered, including on narrow screens. */
+.header-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
