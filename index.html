@@ -152,7 +152,7 @@
                       type="number"
                       min="1"
                       step="1"
-                      value="1"
+                      value=""
                     /><button
                       class="hp-plus"
                       title="恢复 HP"
@@ -216,6 +216,13 @@
             <span class="library-chevron" aria-hidden="true">⌄</span>
           </div>
           <div id="allSpellsPanel" class="all-spells-panel" hidden>
+            <div class="sync-row">
+              <button type="button" id="syncSpellsBtn" class="primary">
+                ↻ 同步在线法术库</button
+              ><span id="syncStatus" class="sub" role="status"
+                >在线来源：D&D 5e SRD 2024（仅开放规则内容）</span
+              >
+            </div>
             <div class="field">
               <input
                 id="search"

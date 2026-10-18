@@ -7,4 +7,8 @@ Email: guolinus@gmail.com
 
 Cleric · Grave Domain · Lv. 7
 
-Lv7 updates: Level 4 spells
+Cleric Lv7 updates: Level 4 spells
+
+Update All Spell Table online update feature and filter
+
+Update dynamic Spell Slots card

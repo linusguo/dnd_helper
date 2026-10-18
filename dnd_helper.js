@@ -1522,6 +1522,27 @@ const spells = [
     triggerOnly: true,
   },
 ];
+// Load the last successful SRD sync before the app initializes; local spell entries remain authoritative.
+(function loadCachedOnlineSpells() {
+  try {
+    const cached = JSON.parse(
+      localStorage.getItem("dndHelperSrdSpellsV1") || "[]",
+    );
+    for (const item of cached) {
+      if (
+        item &&
+        item.name &&
+        !spells.some(
+          (s) => s.name.toLowerCase() === String(item.name).toLowerCase(),
+        )
+      )
+        spells.push(item);
+    }
+  } catch (e) {
+    /* Ignore a damaged cache and keep the built-in list usable. */
+  }
+})();
+
 const defaults = {
   clericLevel: 7,
   wisdom: 4,
@@ -1532,8 +1553,28 @@ const defaults = {
   tempHp: 0,
   ac: 18,
   spellSlotCastThisTurn: false,
-  slots: { "1st": 4, "2nd": 3, "3rd": 3, "4th": 1 },
-  maxSlots: { "1st": 4, "2nd": 3, "3rd": 3, "4th": 1 },
+  slots: {
+    "1st": 4,
+    "2nd": 3,
+    "3rd": 3,
+    "4th": 1,
+    "5th": 0,
+    "6th": 0,
+    "7th": 0,
+    "8th": 0,
+    "9th": 0,
+  },
+  maxSlots: {
+    "1st": 4,
+    "2nd": 3,
+    "3rd": 3,
+    "4th": 1,
+    "5th": 0,
+    "6th": 0,
+    "7th": 0,
+    "8th": 0,
+    "9th": 0,
+  },
   channelDivinity: 3,
   featureUses: {},
   concentration: null,
@@ -1572,34 +1613,112 @@ const defaults = {
   notes: "",
 };
 
-const PREPARED_LIMIT_BY_LEVEL = {
-  1: 4,
-  2: 5,
-  3: 6,
-  4: 7,
-  5: 9,
-  6: 10,
-  7: 11,
-  8: 12,
-  9: 14,
-  10: 15,
-  11: 16,
-  12: 16,
-  13: 17,
-  14: 17,
-  15: 18,
-  16: 18,
-  17: 19,
-  18: 20,
-  19: 21,
-  20: 22,
-};
 function preparedSpellLimit() {
-  return (
-    PREPARED_LIMIT_BY_LEVEL[
-      Math.max(1, Math.min(20, Number(state.clericLevel) || 6))
-    ] || 10
+  return Math.max(
+    1,
+    (Number(state.clericLevel) || 1) + (Number(state.wisdom) || 0),
   );
+}
+function spellLevelNumber(level) {
+  return (
+    {
+      Cantrip: 0,
+      "1st": 1,
+      "2nd": 2,
+      "3rd": 3,
+      "4th": 4,
+      "5th": 5,
+      "6th": 6,
+      "7th": 7,
+      "8th": 8,
+      "9th": 9,
+    }[level] ?? 99
+  );
+}
+function maxSpellLevelForCleric(level) {
+  if (level < 3) return 1;
+  if (level < 5) return 2;
+  if (level < 7) return 3;
+  if (level < 9) return 4;
+  if (level < 11) return 5;
+  if (level < 13) return 6;
+  if (level < 15) return 7;
+  if (level < 17) return 8;
+  return 9;
+}
+const CLERIC_SLOT_TABLE = {
+  1: [2, 0, 0, 0, 0, 0, 0, 0, 0],
+  2: [3, 0, 0, 0, 0, 0, 0, 0, 0],
+  3: [4, 2, 0, 0, 0, 0, 0, 0, 0],
+  4: [4, 3, 0, 0, 0, 0, 0, 0, 0],
+  5: [4, 3, 2, 0, 0, 0, 0, 0, 0],
+  6: [4, 3, 3, 0, 0, 0, 0, 0, 0],
+  7: [4, 3, 3, 1, 0, 0, 0, 0, 0],
+  8: [4, 3, 3, 2, 0, 0, 0, 0, 0],
+  9: [4, 3, 3, 3, 1, 0, 0, 0, 0],
+  10: [4, 3, 3, 3, 2, 0, 0, 0, 0],
+  11: [4, 3, 3, 3, 2, 1, 0, 0, 0],
+  12: [4, 3, 3, 3, 2, 1, 0, 0, 0],
+  13: [4, 3, 3, 3, 2, 1, 1, 0, 0],
+  14: [4, 3, 3, 3, 2, 1, 1, 0, 0],
+  15: [4, 3, 3, 3, 2, 1, 1, 1, 0],
+  16: [4, 3, 3, 3, 2, 1, 1, 1, 0],
+  17: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+  18: [4, 3, 3, 3, 3, 1, 1, 1, 1],
+  19: [4, 3, 3, 3, 3, 2, 1, 1, 1],
+  20: [4, 3, 3, 3, 3, 2, 2, 1, 1],
+};
+function applyLevelConfiguration(oldLevel, newLevel) {
+  // Recalculate level-dependent character values. Cleric uses a d8 Hit Die;
+  // average HP gain after level 1 is 5 + Constitution modifier per level.
+  const levelDelta = newLevel - oldLevel;
+  if (levelDelta !== 0) {
+    const conMod = Number.isSafeInteger(Number(state.conMod))
+      ? Number(state.conMod)
+      : 0;
+    const hpGain = levelDelta * (5 + conMod);
+    state.maxHp = Math.max(1, Number(state.maxHp || 1) + hpGain);
+    state.hp = Math.max(
+      0,
+      Math.min(state.maxHp, Number(state.hp || 0) + hpGain),
+    );
+  }
+  // Proficiency bonus is determined by character level, not manually maintained.
+  state.proficiency =
+    newLevel >= 17
+      ? 6
+      : newLevel >= 13
+        ? 5
+        : newLevel >= 9
+          ? 4
+          : newLevel >= 5
+            ? 3
+            : 2;
+  const oldSlots = { ...(state.maxSlots || {}) },
+    oldRemaining = { ...(state.slots || {}) };
+  const row = CLERIC_SLOT_TABLE[newLevel] || CLERIC_SLOT_TABLE[1];
+  state.maxSlots = {};
+  state.slots = {};
+  for (let i = 1; i <= 9; i++) {
+    const key = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"][
+        i - 1
+      ],
+      nextMax = row[i - 1] || 0,
+      previousMax = Number(oldSlots[key] || 0),
+      previousRemaining = Number(oldRemaining[key] || 0);
+    state.maxSlots[key] = nextMax;
+    state.slots[key] = Math.min(
+      nextMax,
+      Math.max(0, previousRemaining + Math.max(0, nextMax - previousMax)),
+    );
+  }
+  const baseCantripLimit = newLevel >= 10 ? 5 : newLevel >= 4 ? 4 : 3;
+  // This character has a bonus allowing two additional cantrips.
+  const cantripLimit = baseCantripLimit + 2;
+  state.cantripLimit = cantripLimit;
+  state.turnStartSlots = { ...state.slots };
+  // Preserve existing choices; only warn if the character currently knows more cantrips than the new level allows.
+  state.levelConfigUpdatedAt = new Date().toISOString();
 }
 function countsAgainstPreparedLimit(s) {
   return (
@@ -1661,21 +1780,9 @@ function loadState() {
     const merged = {
       ...defaults,
       ...saved,
-      clericLevel: 7,
-      slots: {
-        ...defaults.slots,
-        ...(saved.slots || {}),
-        "4th": (saved.slots || {}).hasOwnProperty("4th")
-          ? (saved.slots || {})["4th"]
-          : 1,
-      },
-      maxSlots: {
-        ...defaults.maxSlots,
-        ...(saved.maxSlots || {}),
-        "4th": (saved.maxSlots || {}).hasOwnProperty("4th")
-          ? (saved.maxSlots || {})["4th"]
-          : 1,
-      },
+      clericLevel: Number(saved.clericLevel) || defaults.clericLevel,
+      slots: { ...defaults.slots, ...(saved.slots || {}) },
+      maxSlots: { ...defaults.maxSlots, ...(saved.maxSlots || {}) },
       featureUses: {
         ...(defaults.featureUses || {}),
         ...(saved.featureUses || {}),
@@ -1708,6 +1815,21 @@ function loadState() {
     return structuredClone(defaults);
   }
 }
+function showLevelWarning(warnings) {
+  const backdrop = document.getElementById("modalBackdrop"),
+    title = document.getElementById("modalTitle"),
+    type = document.getElementById("modalType"),
+    body = document.getElementById("modalBody");
+  backdrop.classList.add("level-warning-open");
+  type.textContent = "";
+  title.textContent = "⚠ 法术准备需要调整";
+  body.innerHTML = `<div style="white-space:pre-line">${warnings.map(esc).join("\n\n")}</div><div style="margin-top:28px"><button class="primary level-warning-close" onclick="closeLevelWarning()">我知道了</button></div>`;
+  backdrop.classList.add("open");
+}
+function closeLevelWarning() {
+  const backdrop = document.getElementById("modalBackdrop");
+  backdrop.classList.remove("level-warning-open", "open");
+}
 function editClericLevel() {
   const current = Number.isSafeInteger(Number(state.clericLevel))
     ? Number(state.clericLevel)
@@ -1719,8 +1841,48 @@ function editClericLevel() {
     alert("输入无效：等级必须是 1–20 之间的整数，不能输入小数或字母。");
     return;
   }
+  const oldLevel = Number(state.clericLevel) || 1;
   state.clericLevel = Number(textValue);
+  applyLevelConfiguration(oldLevel, state.clericLevel);
   save();
+  if (state.clericLevel > oldLevel) {
+    toast(`等级上升至 ${state.clericLevel} 级`);
+    return;
+  }
+  if (state.clericLevel === oldLevel) {
+    return;
+  }
+  const preparedCount = preparedSpellCount();
+  const preparedLimit = preparedSpellLimit();
+  const maxSpellLevel = maxSpellLevelForCleric(Number(state.clericLevel));
+  const unusablePrepared = (state.preparedSpells || [])
+    .map((name) => spells.find((s) => s.name === name))
+    .filter(
+      (s) =>
+        s &&
+        s.level !== "Cantrip" &&
+        s.level !== "Feature" &&
+        !s.always &&
+        spellLevelNumber(s.level) > maxSpellLevel,
+    );
+  const warnings = [];
+  if (preparedCount > preparedLimit) {
+    warnings.push(`牧师 ${state.clericLevel} 级只能准备 ${preparedLimit} 个法术（戏法、领域常备法术不计入）。
+现在准备了 ${preparedCount} 个，超出 ${preparedCount - preparedLimit} 个，需要移除 ${preparedCount - preparedLimit} 个。`);
+  }
+  if (unusablePrepared.length) {
+    const levels = [...new Set(unusablePrepared.map((s) => s.level))]
+      .sort((a, b) => spellLevelNumber(a) - spellLevelNumber(b))
+      .join("、");
+    warnings.push(`牧师 ${state.clericLevel} 级目前最高只能使用 ${maxSpellLevel} 环法术，但准备了当前等级无法准备的法术：
+${unusablePrepared.map((s) => `${s.name}（${s.level}）`).join("、")}。`);
+  }
+  if (warnings.length) {
+    warnings.unshift(`等级下降至 ${state.clericLevel} 级。`);
+    showLevelWarning(warnings);
+  } else {
+    toast(`等级下降至 ${state.clericLevel} 级`);
+  }
 }
 function save() {
   state.spellSetupVersion = 4;
@@ -1746,27 +1908,41 @@ function tag(s, cls = "") {
   return `<span class="pill ${cls}">${esc(s)}</span>`;
 }
 function renderSlotBoxes() {
-  const levels = ["1st", "2nd", "3rd", "4th"];
-  return levels
-    .map((level) => {
-      const max = Math.max(
-        0,
-        Number(
-          state.maxSlots?.[level] ?? { "1st": 4, "2nd": 3, "3rd": 3 }[level],
-        ) || 0,
-      );
-      const remaining = Math.max(
-        0,
-        Math.min(max, Number(state.slots?.[level]) || 0),
-      );
-      const boxes = Array.from(
-        { length: max },
-        (_, i) =>
-          `<span class="slot-box ${i < remaining ? "available" : "spent"}" title="${i < remaining ? "可用" : "已消耗"}"></span>`,
-      ).join("");
-      return `<div class="slot-level slot-level-${level[0]}"><span class="slot-level-label">${level}</span><div class="slot-boxes">${boxes || `<span class="slot-empty">—</span>`}</div></div>`;
-    })
-    .join("");
+  const levels = [
+    "1st",
+    "2nd",
+    "3rd",
+    "4th",
+    "5th",
+    "6th",
+    "7th",
+    "8th",
+    "9th",
+  ];
+  const renderColumn = (columnLevels) =>
+    columnLevels
+      .map((level) => {
+        const max = Math.max(
+          0,
+          Number(
+            state.maxSlots?.[level] ?? { "1st": 4, "2nd": 3, "3rd": 3 }[level],
+          ) || 0,
+        );
+        const remaining = Math.max(
+          0,
+          Math.min(max, Number(state.slots?.[level]) || 0),
+        );
+        const boxes = Array.from(
+          { length: max },
+          (_, i) =>
+            `<button type="button" class="slot-box ${i < remaining ? "available" : "spent"}" title="${i < remaining ? "可用，点击标记为已消耗" : "已消耗，点击恢复为可用"}" aria-label="${level} 法术位第 ${i + 1} 格：${i < remaining ? "可用" : "已消耗"}" onclick="toggleSlotBox('${level}',${i})"></button>`,
+        ).join("");
+        if (max === 0) return "";
+        return `<div class="slot-level slot-level-${level[0]}"><span class="slot-level-label">${level}</span><div class="slot-boxes">${boxes}</div></div>`;
+      })
+      .filter(Boolean)
+      .join("");
+  return `<div class="slot-column">${renderColumn(levels.slice(0, 4))}</div><div class="slot-column">${renderColumn(levels.slice(4))}</div>`;
 }
 function cleanEffectNote(note) {
   return String(note || "")
@@ -2050,6 +2226,15 @@ function renderDecision() {
 function togglePrepared(name) {
   const s = spells.find((x) => x.name === name);
   if (!s || s.resource === "Channel Divinity") return;
+  if (
+    s.level !== "Cantrip" &&
+    s.level !== "Feature" &&
+    spellLevelNumber(s.level) >
+      maxSpellLevelForCleric(Number(state.clericLevel) || 1)
+  ) {
+    toast(`${state.clericLevel} 级牧师尚不能准备 ${s.level} 法术`);
+    return;
+  }
   if (s.known === false) {
     toast(`${name} 尚未学习，不能加入本回合决策`);
     return;
@@ -2071,12 +2256,24 @@ function togglePrepared(name) {
   }
   state.preparedSpells = [...prepared];
   save();
+  renderSpells();
+  renderDecision();
   toast(prepared.has(name) ? `${name} 已设为已准备` : `${name} 已取消准备`);
 }
 function renderSpells() {
   const q = (document.getElementById("search").value || "").toLowerCase();
+  const currentMaxSpellLevel = maxSpellLevelForCleric(
+    Number(state.clericLevel) || 1,
+  );
   const list = spells.filter((s) => {
     if (s.triggerOnly) return false;
+    // Hide leveled spells above the cleric's currently accessible spell level, including stale cached entries.
+    if (
+      s.level !== "Cantrip" &&
+      s.level !== "Feature" &&
+      spellLevelNumber(s.level) > currentMaxSpellLevel
+    )
+      return false;
     const text = [
       s.name,
       s.level,
@@ -2103,7 +2300,17 @@ function renderSpells() {
 function spellSlotOptions(s) {
   if (s.level === "Cantrip" || s.level === "Feature")
     return `<div class="effect"><strong>不消耗法术位</strong><p>戏法 / 职业能力不使用法术位。</p></div>`;
-  const levels = ["1st", "2nd", "3rd", "4th"];
+  const levels = [
+    "1st",
+    "2nd",
+    "3rd",
+    "4th",
+    "5th",
+    "6th",
+    "7th",
+    "8th",
+    "9th",
+  ];
   const base = levels.indexOf(s.level);
   const choices = levels.slice(base).filter((l) => (state.slots[l] || 0) > 0);
   if (!choices.length)
@@ -2122,7 +2329,6 @@ function selectedSlotFor(s) {
   return document.getElementById("castSlot")?.value || s.level;
 }
 function renderPhaseTabs() {
-  const order = ["Action", "Bonus Action", "Reaction", "Movement"];
   const labels = {
     Action: "Action",
     "Bonus Action": "Bonus Action",
@@ -2379,10 +2585,14 @@ function toggleCantripLearningFromLibrary(name) {
   }
   state.knownCantrips = [...known];
   save();
+  renderSpells();
+  renderDecision();
   closeModal();
 }
 function closeModal() {
-  document.getElementById("modalBackdrop").classList.remove("open");
+  document
+    .getElementById("modalBackdrop")
+    .classList.remove("open", "level-warning-open");
 }
 function automaticEffectRounds(s) {
   const d = String(s.duration || "")
@@ -2417,9 +2627,63 @@ function automaticEffectRounds(s) {
   // Hour-long and longer effects are kept active without combat-round countdown.
   return null;
 }
+function spellPreparationComplianceIssues() {
+  const level = Number(state.clericLevel) || 1;
+  const limit = preparedSpellLimit();
+  const count = preparedSpellCount();
+  const issues = [];
+  if (count > limit)
+    issues.push(
+      `准备法术数量超限：${level} 级牧师最多准备 ${limit} 个，现在准备了 ${count} 个，超出 ${count - limit} 个，需要移除 ${count - limit} 个。`,
+    );
+  const tooHigh = [
+    ...new Set(
+      (state.preparedSpells || []).filter((n) => {
+        const s = spells.find((x) => x.name === n);
+        return (
+          s &&
+          s.level !== "Cantrip" &&
+          s.level !== "Feature" &&
+          !s.always &&
+          spellLevelNumber(s.level) > maxSpellLevelForCleric(level)
+        );
+      }),
+    ),
+  ]
+    .map((n) => spells.find((x) => x.name === n))
+    .filter(Boolean);
+  if (tooHigh.length) {
+    const maxLevel = maxSpellLevelForCleric(level);
+    const levelName =
+      {
+        1: "1st",
+        2: "2nd",
+        3: "3rd",
+        4: "4th",
+        5: "5th",
+        6: "6th",
+        7: "7th",
+        8: "8th",
+        9: "9th",
+      }[maxLevel] || `${maxLevel} 环`;
+    issues.push(
+      `${level} 级牧师目前最高只能准备 ${levelName} 法术；以下已准备法术等级过高：${tooHigh.map((x) => `${x.name}（${x.level}）`).join("、")}。请取消准备这些法术。`,
+    );
+  }
+  return issues;
+}
 function applySpell(name) {
   const s = spells.find((x) => x.name === name);
   if (!s) return;
+  if (s.level !== "Feature" && s.resource !== "Channel Divinity") {
+    const issues = spellPreparationComplianceIssues();
+    if (issues.length) {
+      alert(
+        `当前已准备法术不符合角色等级要求，暂时不能施放任何法术：\n\n${issues.join("\n\n")}`,
+      );
+      return;
+    }
+  }
   if (usesSpellSlot(s) && state.spellSlotCastThisTurn) {
     toast("本回合已施放法术");
     return;
@@ -2457,7 +2721,17 @@ function applySpell(name) {
   // Spend the selected slot, which may be higher than the spell's base level.
   const castSlot = selectedSlotFor(s);
   if (castSlot) {
-    const order = ["1st", "2nd", "3rd", "4th"];
+    const order = [
+      "1st",
+      "2nd",
+      "3rd",
+      "4th",
+      "5th",
+      "6th",
+      "7th",
+      "8th",
+      "9th",
+    ];
     if (order.indexOf(castSlot) < order.indexOf(s.level)) {
       alert("不能使用低于法术基础环级的法术位。");
       return;
@@ -2525,6 +2799,26 @@ function applySpell(name) {
   save();
   closeModal();
   toast(`${s.name} 已施放`);
+}
+function toggleSlotBox(level, index) {
+  const max = Math.max(0, Number(state.maxSlots?.[level]) || 0);
+  const remaining = Math.max(
+    0,
+    Math.min(max, Number(state.slots?.[level]) || 0),
+  );
+  if (!Number.isInteger(index) || index < 0 || index >= max) return;
+  // Clicking a filled box spends one slot; clicking an empty box restores one.
+  // The display keeps available slots grouped first, so the count is the source of truth.
+  if (index < remaining) {
+    state.slots[level] = Math.max(0, remaining - 1);
+  } else {
+    state.slots[level] = Math.min(max, remaining + 1);
+  }
+  state.turnStartSlots = {
+    ...(state.turnStartSlots || {}),
+    [level]: state.slots[level],
+  };
+  save();
 }
 function spendSlot(level) {
   if (state.slots[level] > 0) {
@@ -2785,6 +3079,7 @@ function adjustHPByInput(direction) {
   } else {
     state.hp = Math.min(state.maxHp, state.hp + amount);
   }
+  input.value = "";
   save();
 }
 function editStat(key, label) {
@@ -2856,6 +3151,179 @@ function importData(file) {
   };
   r.readAsText(file);
 }
+const SRD_API_BASE = "https://www.dnd5eapi.co/api/2024";
+function levelLabelFromNumber(n) {
+  return n === 0
+    ? "Cantrip"
+    : {
+        1: "1st",
+        2: "2nd",
+        3: "3rd",
+        4: "4th",
+        5: "5th",
+        6: "6th",
+        7: "7th",
+        8: "8th",
+        9: "9th",
+      }[n] || "Feature";
+}
+function inferSpellCategory(text) {
+  const t = String(text || "").toLowerCase();
+  const out = [];
+  if (/heal|hit points|regain hit points|temporary hit points/.test(t))
+    out.push("Healing");
+  if (/damage|attack roll|saving throw/.test(t)) out.push("Attack");
+  if (
+    /advantage|bonus|resistance|armor class|ac increases|protect|ward/.test(t)
+  )
+    out.push("Buff");
+  if (
+    /charmed|frightened|restrain|paraly|banish|incapacitat|slow|blind|control/.test(
+      t,
+    )
+  )
+    out.push("Debuff");
+  if (
+    /teleport|detect|locate|create|destroy|communicate|understand|see invisible/.test(
+      t,
+    )
+  )
+    out.push("Utility");
+  return out.length ? out : ["Utility"];
+}
+function inferAction(castingTime) {
+  const t = String(castingTime || "").toLowerCase();
+  if (t.includes("bonus action")) return "Bonus Action";
+  if (t.includes("reaction")) return "Reaction";
+  return "Action";
+}
+async function fetchJson(url, signal) {
+  const r = await fetch(url, {
+    signal,
+    headers: { Accept: "application/json" },
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+async function syncOnlineSpells() {
+  const btn = document.getElementById("syncSpellsBtn"),
+    status = document.getElementById("syncStatus");
+  if (!btn || !status) return;
+  btn.disabled = true;
+  btn.textContent = "正在同步…";
+  status.textContent = "正在连接 D&D 5e SRD 2024 API…";
+  const controller = new AbortController(),
+    timeout = setTimeout(() => controller.abort(), 60000);
+  try {
+    const index = await fetchJson(`${SRD_API_BASE}/spells`, controller.signal);
+    const entries = Array.isArray(index.results) ? index.results : [];
+    if (!entries.length) throw new Error("API 未返回法术索引");
+    const results = [];
+    let cursor = 0;
+    const currentMaxSpellLevel = maxSpellLevelForCleric(
+      Number(state.clericLevel) || 1,
+    );
+    async function worker() {
+      while (cursor < entries.length) {
+        const item = entries[cursor++];
+        try {
+          const detail = await fetchJson(
+            `https://www.dnd5eapi.co${item.url}`,
+            controller.signal,
+          );
+          if (
+            Array.isArray(detail.classes) &&
+            detail.classes.length &&
+            !detail.classes.some(
+              (c) => String(c.name || "").toLowerCase() === "cleric",
+            )
+          )
+            continue;
+          const level = Number(detail.level) || 0;
+          if (level > currentMaxSpellLevel) continue;
+          const name = detail.name;
+          if (!name) continue;
+          const description = Array.isArray(detail.desc)
+            ? detail.desc.join("\n\n")
+            : String(detail.desc || "");
+          const higher = Array.isArray(detail.higher_level)
+            ? detail.higher_level.join("\n\n")
+            : String(detail.higher_level || "");
+          const casting = detail.casting_time || "1 Action";
+          const duration = detail.duration || "Unknown";
+          const range = detail.range || "Unknown";
+          const concentration = !!detail.concentration;
+          const category = inferSpellCategory(`${description} ${higher}`);
+          results.push({
+            name,
+            level: levelLabelFromNumber(level),
+            action: inferAction(casting),
+            castingTime: casting,
+            category,
+            range,
+            duration,
+            concentration,
+            components: Array.isArray(detail.components)
+              ? detail.components.join(", ")
+              : "",
+            description:
+              description || "SRD spell; check source for full details.",
+            upcast: higher,
+            source: "D&D 5e SRD 5.2.1 API",
+            sourceUrl: `https://www.dndbeyond.com/spells/${String(item.index || name.toLowerCase().replace(/[^a-z0-9]+/g, "-")).replace(/^-/, "")}`,
+            apiIndex: item.index,
+            always: false,
+          });
+        } catch (e) {
+          /* skip individual unavailable entries; report aggregate below */
+        }
+      }
+    }
+    await Promise.all(Array.from({ length: 5 }, () => worker()));
+    if (!results.length) throw new Error("没有成功读取任何法术详情");
+    const localNames = new Set(spells.map((s) => s.name.toLowerCase()));
+    const additions = results.filter(
+      (s) => !localNames.has(s.name.toLowerCase()),
+    );
+    const oldCache = JSON.parse(
+      localStorage.getItem("dndHelperSrdSpellsV1") || "[]",
+    );
+    const cacheByName = new Map(
+      oldCache.map((s) => [String(s.name).toLowerCase(), s]),
+    );
+    for (const s of additions) cacheByName.set(s.name.toLowerCase(), s);
+    const cache = [...cacheByName.values()].filter(
+      (s) => spellLevelNumber(s.level) <= currentMaxSpellLevel,
+    );
+    localStorage.setItem("dndHelperSrdSpellsV1", JSON.stringify(cache));
+    for (const s of cache) {
+      if (!spells.some((x) => x.name.toLowerCase() === s.name.toLowerCase()))
+        spells.push(s);
+    }
+    state.lastSpellSync = new Date().toISOString();
+    state.lastSpellSyncCount = results.length;
+    state.lastSpellSyncSource = "D&D 5e SRD 5.2.1 API";
+    save();
+    status.textContent = `同步成功：当前等级可用范围内的牧师在线法术 ${results.length} 个；新增 ${additions.length} 个。`;
+    toast(`法术同步完成：新增 ${additions.length} 个 SRD 法术`);
+  } catch (err) {
+    const detail =
+      err && err.name === "AbortError"
+        ? "连接超时"
+        : String((err && err.message) || err);
+    const fileMode = location.protocol === "file:";
+    status.textContent = `同步失败（${detail}）。已保留本地法术与上次缓存。${fileMode ? "请通过 GitHub Pages 或本地 HTTP 服务器打开，以避免 file:// 跨域限制。" : "请检查网络或 API 状态后重试。"}`;
+    toast("在线法术库不可用；本地列表未更改");
+  } finally {
+    clearTimeout(timeout);
+    btn.disabled = false;
+    btn.textContent = "↻ 同步在线法术库";
+  }
+}
+
+document
+  .getElementById("syncSpellsBtn")
+  ?.addEventListener("click", syncOnlineSpells);
 document.querySelectorAll("#tabs .tab").forEach((b) =>
   b.addEventListener("click", () => {
     activeTab = b.dataset.tab;
@@ -2905,13 +3373,16 @@ document.getElementById("hpAmount").addEventListener("input", (e) => {
 });
 document.getElementById("hpAmount").addEventListener("change", (e) => {
   const el = e.target;
+  if (el.value === "") {
+    el.setCustomValidity("");
+    return;
+  }
   if (
-    el.value === "" ||
     !/^(0|[1-9][0-9]*)$/.test(el.value) ||
     !Number.isSafeInteger(Number(el.value)) ||
     Number(el.value) < 1
   ) {
-    el.value = "1";
+    el.value = "";
     el.setCustomValidity("请输入大于 0 的整数");
     el.reportValidity();
   } else el.setCustomValidity("");
