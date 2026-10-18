@@ -1767,6 +1767,24 @@ if (!Array.isArray(state.turnStartEffects))
   state.turnStartEffects = JSON.parse(JSON.stringify(state.effects || []));
 if (!state.turnStartSlots || typeof state.turnStartSlots !== "object")
   state.turnStartSlots = { ...state.slots };
+// Persist the restored/normalized state immediately so prepared spells survive reopening.
+try {
+  localStorage.setItem("clericCompanionState", JSON.stringify(state));
+  localStorage.setItem(
+    "dndHelperVitalsV1",
+    JSON.stringify({
+      hp: state.hp,
+      maxHp: state.maxHp,
+      tempHp: state.tempHp,
+      slots: state.slots,
+      maxSlots: state.maxSlots,
+      turnStartSlots: state.turnStartSlots,
+      featureUses: state.featureUses,
+    }),
+  );
+} catch (e) {
+  /* App remains usable if storage is unavailable. */
+}
 let activeTab = "Action",
   activeFilter = "All";
 let completedPhases = new Set(
@@ -1777,21 +1795,47 @@ function loadState() {
     const saved = JSON.parse(
       localStorage.getItem("clericCompanionState") || "{}",
     );
+    // Keep a dedicated snapshot for HP and spell slots as well as the full app state.
+    // This protects these values when an older app version writes an incomplete state object.
+    let vitals = {};
+    try {
+      vitals =
+        JSON.parse(localStorage.getItem("dndHelperVitalsV1") || "{}") || {};
+    } catch (e) {
+      vitals = {};
+    }
     const merged = {
       ...defaults,
       ...saved,
       clericLevel: Number(saved.clericLevel) || defaults.clericLevel,
-      slots: { ...defaults.slots, ...(saved.slots || {}) },
-      maxSlots: { ...defaults.maxSlots, ...(saved.maxSlots || {}) },
+      slots: {
+        ...defaults.slots,
+        ...(saved.slots || {}),
+        ...(vitals.slots || {}),
+      },
+      maxSlots: {
+        ...defaults.maxSlots,
+        ...(saved.maxSlots || {}),
+        ...(vitals.maxSlots || {}),
+      },
       featureUses: {
         ...(defaults.featureUses || {}),
         ...(saved.featureUses || {}),
+        ...(vitals.featureUses || {}),
       },
       knownCantrips: Array.isArray(saved.knownCantrips)
         ? saved.knownCantrips
         : [...defaults.knownCantrips],
     };
-    if (saved.spellSetupVersion !== 4) {
+    for (const key of ["hp", "maxHp", "tempHp"]) {
+      if (Number.isFinite(Number(vitals[key])))
+        merged[key] = Number(vitals[key]);
+    }
+    if (vitals.turnStartSlots && typeof vitals.turnStartSlots === "object")
+      merged.turnStartSlots = { ...vitals.turnStartSlots };
+    // Preserve the user's last prepared-spell selections across app openings and version updates.
+    // Only initialize the default list when no saved selection exists at all.
+    if (!Array.isArray(saved.preparedSpells)) {
       merged.preparedSpells = [
         "Guidance",
         "Resistance",
@@ -1808,8 +1852,8 @@ function loadState() {
         "Mass Healing Word",
         "Spirit Guardians",
       ];
-      merged.spellSetupVersion = 4;
     }
+    merged.spellSetupVersion = 4;
     return merged;
   } catch (e) {
     return structuredClone(defaults);
@@ -1845,6 +1889,10 @@ function editClericLevel() {
   state.clericLevel = Number(textValue);
   applyLevelConfiguration(oldLevel, state.clericLevel);
   save();
+  // Level changes affect both the spell-level filter tabs and the visible spell list.
+  // Refresh these explicitly because save() only renders the main character panels.
+  renderSpells();
+  renderDecision();
   if (state.clericLevel > oldLevel) {
     toast(`等级上升至 ${state.clericLevel} 级`);
     return;
@@ -1886,7 +1934,29 @@ ${unusablePrepared.map((s) => `${s.name}（${s.level}）`).join("、")}。`);
 }
 function save() {
   state.spellSetupVersion = 4;
-  localStorage.setItem("clericCompanionState", JSON.stringify(state));
+  const serialized = JSON.stringify(state);
+  try {
+    localStorage.setItem("clericCompanionState", serialized);
+  } catch (e) {
+    toast("保存失败：浏览器本地存储不可用");
+  }
+  // Persist HP and spell-slot state separately so it can be restored on the next opening.
+  try {
+    localStorage.setItem(
+      "dndHelperVitalsV1",
+      JSON.stringify({
+        hp: state.hp,
+        maxHp: state.maxHp,
+        tempHp: state.tempHp,
+        slots: state.slots,
+        maxSlots: state.maxSlots,
+        turnStartSlots: state.turnStartSlots,
+        featureUses: state.featureUses,
+      }),
+    );
+  } catch (e) {
+    /* Keep the main state save as the primary copy. */
+  }
   render();
 }
 function esc(s) {
@@ -2260,7 +2330,60 @@ function togglePrepared(name) {
   renderDecision();
   toast(prepared.has(name) ? `${name} 已设为已准备` : `${name} 已取消准备`);
 }
+function updateSpellFilterTabs() {
+  const container = document.getElementById("filterTabs");
+  if (!container) return;
+  const maxLevel = maxSpellLevelForCleric(Number(state.clericLevel) || 1);
+  const labels = {
+    1: "1 环",
+    2: "2 环",
+    3: "3 环",
+    4: "4 环",
+    5: "5 环",
+    6: "6 环",
+    7: "7 环",
+    8: "8 环",
+    9: "9 环",
+  };
+  // Keep the non-level filters, and rebuild the level tabs from the current cleric level.
+  const fixed = [...container.querySelectorAll(".tab")].filter(
+    (b) => !/^(?:[1-9](?:st|nd|rd|th))$/.test(b.dataset.filter),
+  );
+  const all = fixed.find((b) => b.dataset.filter === "All");
+  const cantrip = fixed.find((b) => b.dataset.filter === "Cantrip");
+  const rest = fixed.filter(
+    (b) => !["All", "Cantrip"].includes(b.dataset.filter),
+  );
+  const levelButtons = [];
+  for (let n = 1; n <= maxLevel; n++) {
+    const key = { 1: "1st", 2: "2nd", 3: "3rd" }[n] || `${n}th`;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "tab";
+    b.dataset.filter = key;
+    b.textContent = labels[n];
+    levelButtons.push(b);
+  }
+  container.replaceChildren();
+  if (all) container.append(all);
+  if (cantrip) container.append(cantrip);
+  for (const b of levelButtons) container.append(b);
+  for (const b of rest) container.append(b);
+  if (
+    activeFilter !== "All" &&
+    activeFilter !== "Cantrip" &&
+    !levelButtons.some((b) => b.dataset.filter === activeFilter) &&
+    !rest.some((b) => b.dataset.filter === activeFilter)
+  )
+    activeFilter = "All";
+  container
+    .querySelectorAll(".tab")
+    .forEach((b) =>
+      b.classList.toggle("active", b.dataset.filter === activeFilter),
+    );
+}
 function renderSpells() {
+  updateSpellFilterTabs();
   const q = (document.getElementById("search").value || "").toLowerCase();
   const currentMaxSpellLevel = maxSpellLevelForCleric(
     Number(state.clericLevel) || 1,
@@ -3330,16 +3453,12 @@ document.querySelectorAll("#tabs .tab").forEach((b) =>
     render();
   }),
 );
-document.querySelectorAll("#filterTabs .tab").forEach((b) =>
-  b.addEventListener("click", () => {
-    document
-      .querySelectorAll("#filterTabs .tab")
-      .forEach((x) => x.classList.remove("active"));
-    b.classList.add("active");
-    activeFilter = b.dataset.filter;
-    renderSpells();
-  }),
-);
+document.getElementById("filterTabs").addEventListener("click", (e) => {
+  const b = e.target.closest(".tab");
+  if (!b || !e.currentTarget.contains(b)) return;
+  activeFilter = b.dataset.filter;
+  renderSpells();
+});
 document.getElementById("search").addEventListener("input", renderSpells);
 function toggleAllSpells() {
   const panel = document.getElementById("allSpellsPanel");
