@@ -8,79 +8,33 @@
   </head>
   <body>
     <header>
-      <div class="header-inner">
-        <div>
-          <h1>
-            Cleric · Grave Domain ·
-            <span
-              class="editable-number"
-              id="clericLevelText"
-              role="button"
-              tabindex="0"
-              title="点击修改等级（1–20）"
-              onclick="editClericLevel()"
-              onkeydown="
-                if (event.key === 'Enter' || event.key === ' ')
-                  editClericLevel();
-              "
-              >Lv. <span id="clericLevelValue">6</span></span
-            >
-          </h1>
-          <div class="sub">D&amp;D 5.5e / 2024 规则</div>
+      <div>
+        <h1>⚔ DnD Helper</h1>
+        <div class="sub">
+          D&D 5.5e / 2024 规则 · Grave Domain Cleric
+          <span
+            class="pill gold editable-number"
+            id="clericLevelText"
+            role="button"
+            tabindex="0"
+            title="点击修改等级（1–20）"
+            onclick="editClericLevel()"
+            onkeydown="
+              if (event.key === 'Enter' || event.key === ' ') editClericLevel();
+            "
+            >Lv. <span id="clericLevelValue">7</span></span
+          >
         </div>
-        <div class="inline header-actions">
-          <button id="nextTurn" class="primary">开始回合</button
-          ><button id="resetTurn">重置回合</button
-          ><button id="shortRestBtn" class="rest-btn">短休</button
-          ><button id="longRestBtn" class="rest-btn">长休</button>
-        </div>
+      </div>
+      <div class="inline header-actions">
+        <button id="nextTurn" class="primary">开始回合</button
+        ><button id="resetTurn">重置本回合</button
+        ><button id="shortRestBtn" class="rest-btn">短休</button
+        ><button id="longRestBtn" class="rest-btn">长休</button>
       </div>
     </header>
     <main>
       <div class="grid">
-        <div class="stat-summary-row span-12">
-          <div class="inline">
-            <span
-              id="acText"
-              class="pill editable-number"
-              role="button"
-              tabindex="0"
-              title="点击编辑 Armor Class"
-              onclick="editStat('ac', 'Armor Class')"
-              onkeydown="
-                if (event.key === 'Enter' || event.key === ' ')
-                  editStat('ac', 'Armor Class');
-              "
-              >Armor Class —</span
-            ><span
-              class="pill blue editable-number"
-              role="button"
-              tabindex="0"
-              title="点击编辑 Wisdom 加值（可为负数）"
-              onclick="editSignedStat('wisdom', 'Wisdom')"
-              onkeydown="
-                if (event.key === 'Enter' || event.key === ' ')
-                  editSignedStat('wisdom', 'Wisdom');
-              "
-              >Wisdom <span id="wisdomText">+4</span></span
-            ><span
-              class="pill blue editable-number"
-              role="button"
-              tabindex="0"
-              title="点击编辑 Proficiency 加值"
-              onclick="editStat('proficiency', 'Proficiency')"
-              onkeydown="
-                if (event.key === 'Enter' || event.key === ' ')
-                  editStat('proficiency', 'Proficiency');
-              "
-              >Proficiency <span id="proficiencyText">+3</span></span
-            ><span class="pill blue" title="自动计算：Wisdom + Proficiency"
-              >Spell Attack <span id="spellAttackText">+7</span></span
-            ><span class="pill blue" title="自动计算：8 + Wisdom + Proficiency"
-              >Spell Save DC <span id="spellSaveDCText">15</span></span
-            >
-          </div>
-        </div>
         <section class="card span-12">
           <div class="section-title">
             <div class="status-heading">
@@ -100,6 +54,49 @@
                 >
                 回合
               </h2>
+            </div>
+            <div class="inline">
+              <span
+                id="acText"
+                class="pill editable-number"
+                role="button"
+                tabindex="0"
+                title="点击编辑 AC"
+                onclick="editStat('ac', 'AC')"
+                onkeydown="
+                  if (event.key === 'Enter' || event.key === ' ')
+                    editStat('ac', 'AC');
+                "
+                >AC —</span
+              ><span
+                class="pill blue editable-number"
+                role="button"
+                tabindex="0"
+                title="点击编辑 Wisdom 加值（可为负数）"
+                onclick="editSignedStat('wisdom', 'Wisdom')"
+                onkeydown="
+                  if (event.key === 'Enter' || event.key === ' ')
+                    editSignedStat('wisdom', 'Wisdom');
+                "
+                >Wisdom <span id="wisdomText">+4</span></span
+              ><span
+                class="pill blue editable-number"
+                role="button"
+                tabindex="0"
+                title="点击编辑 Proficiency 加值"
+                onclick="editStat('proficiency', 'Proficiency')"
+                onkeydown="
+                  if (event.key === 'Enter' || event.key === ' ')
+                    editStat('proficiency', 'Proficiency');
+                "
+                >Proficiency <span id="proficiencyText">+3</span></span
+              ><span class="pill blue" title="自动计算：Wisdom + Proficiency"
+                >Spell Attack <span id="spellAttackText">+7</span></span
+              ><span
+                class="pill blue"
+                title="自动计算：8 + Wisdom + Proficiency"
+                >Spell Save DC <span id="spellSaveDCText">15</span></span
+              >
             </div>
           </div>
           <div class="combat-layout">
@@ -231,6 +228,7 @@
               ><button class="tab" data-filter="1st">1 环</button
               ><button class="tab" data-filter="2nd">2 环</button
               ><button class="tab" data-filter="3rd">3 环</button
+              ><button class="tab" data-filter="4th">4 环</button
               ><button class="tab" data-filter="Feature">职业 / 领域能力</button
               ><button class="tab" data-filter="Attack">攻击</button
               ><button class="tab" data-filter="Healing">治疗</button
@@ -252,23 +250,7 @@
         <div id="modalBody"></div>
       </div>
     </div>
-    <div
-      class="reset-confirm-backdrop"
-      id="resetConfirmBackdrop"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="resetConfirmTitle"
-    >
-      <div class="reset-confirm-dialog">
-        <h2 id="resetConfirmTitle">确认操作？</h2>
-        <p id="resetConfirmMessage"></p>
-        <div class="reset-confirm-actions">
-          <button id="confirmResetTurn" class="primary">确认</button>
-          <button id="cancelResetTurn">取消</button>
-        </div>
-      </div>
-    </div>
     <div class="toast" id="toast"></div>
-    <script src="dnd_helper.js" defer></script>
+    <script src="dnd_helper.js"></script>
   </body>
 </html>

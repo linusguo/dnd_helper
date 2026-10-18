@@ -73,15 +73,15 @@ const spells = [
   {
     name: "Spare the Dying",
     level: "Cantrip",
-    action: "Bonus Action",
+    action: "Action",
     castingTime: "1 Bonus Action (Grave Domain feature)",
     category: ["Healing"],
-    range: "30 ft",
+    range: "15 ft",
     duration: "Instantaneous",
     concentration: false,
     components: "V, S",
     description:
-      "Grave Domain 的 Circle of Mortality 特性使你可以用 Bonus Action 施放此戏法，射程为 30 ft。选择一个生命值为 0、尚未死亡的生物，使其稳定。此处按角色使用的 Grave Domain 特性版本处理；通用法术本身通常为 Action、Touch。",
+      "Grave Domain 的 Circle of Mortality 特性使你可以用 Bonus Action 施放此戏法，射程为 15 ft。选择一个生命值为 0、尚未死亡的生物，使其稳定。此处按角色使用的 Grave Domain 特性版本处理；通用法术本身通常为 Action、Touch。",
     prepared: true,
     always: true,
   },
@@ -370,6 +370,185 @@ const spells = [
     always: true,
   },
   {
+    name: "Aura of Life",
+    level: "4th",
+    action: "Action",
+    category: ["Buff", "Healing"],
+    range: "自身 (30-ft emanation)",
+    duration: "Concentration, up to 10 minutes",
+    concentration: true,
+    components: "V",
+    description:
+      "你散发 30 尺灵光。灵光内的非敌对生物对 Necrotic 伤害具有抗性；生命值为 0 的非敌对生物在灵光内开始回合时恢复 1 HP。需要专注。",
+  },
+  {
+    name: "Aura of Purity",
+    level: "4th",
+    action: "Action",
+    category: ["Buff"],
+    range: "自身 (30-ft emanation)",
+    duration: "Concentration, up to 10 minutes",
+    concentration: true,
+    components: "V",
+    description:
+      "你散发 30 尺灵光；你与灵光内的盟友对疾病和若干状态效果获得防护，具体状态范围以 D&D Beyond 当前版本正文为准。需要专注。",
+  },
+  {
+    name: "Banishment",
+    level: "4th",
+    action: "Action",
+    category: ["Control"],
+    range: "30 ft",
+    duration: "Concentration, up to 1 minute",
+    concentration: true,
+    components: "V, S, M",
+    save: "Charisma",
+    description:
+      "你看见的范围内一个生物进行 Charisma 豁免；失败则被送至无害半位面，持续期间处于 Incapacitated。若目标属于 Aberration、Celestial、Elemental、Fey 或 Fiend，且法术持续满 1 分钟，则不会返回原位面。需要专注。",
+    upcast: "每使用高于 4 环的法术位一环，可额外指定一个目标。",
+  },
+  {
+    name: "Blight",
+    level: "4th",
+    action: "Action",
+    category: ["Attack"],
+    range: "30 ft",
+    duration: "Instantaneous",
+    concentration: false,
+    components: "V, S",
+    save: "Constitution",
+    description:
+      "目标进行 Constitution 豁免；失败受到 8d8 Necrotic 伤害，成功受到一半伤害。植物生物有特殊互动；非魔法植物通常会枯萎。",
+    always: true,
+  },
+  {
+    name: "Control Water",
+    level: "4th",
+    action: "Action",
+    category: ["Control"],
+    range: "300 ft",
+    duration: "Concentration, up to 10 minutes",
+    concentration: true,
+    components: "V, S, M",
+    save: "Strength",
+    description:
+      "操控可见范围内的水体，可选择 Flood、Part Water、Redirect Flow 或 Whirlpool 等效果；具体形状、区域与动作以 D&D Beyond 当前正文为准。需要专注。",
+  },
+  {
+    name: "Death Ward",
+    level: "4th",
+    action: "Action",
+    category: ["Buff"],
+    range: "Touch",
+    duration: "8 hours",
+    concentration: false,
+    components: "V, S",
+    description:
+      "触碰一个生物并给予保护，持续 8 小时。目标第一次降至 0 HP 时改为降至 1 HP，法术结束；若目标受到会立即杀死它而非造成伤害的效果，则该效果对目标失效并结束法术。",
+    always: true,
+  },
+  {
+    name: "Divination",
+    level: "4th",
+    action: "Action",
+    castingTime: "1 Action + 10 minutes (Ritual)",
+    category: ["Utility"],
+    range: "自身",
+    duration: "Instantaneous",
+    concentration: false,
+    components: "V, S, M",
+    description:
+      "向神祇或其代理询问与特定目标、事件或活动相关的预兆；答案通常以短语、谜语或征兆形式出现。可以作为仪式施放。",
+  },
+  {
+    name: "Doomtide",
+    level: "4th",
+    action: "Action",
+    category: ["Attack", "Control"],
+    range: "120 ft (20-ft-radius sphere)",
+    duration: "Concentration, up to 1 minute",
+    concentration: true,
+    components: "V, S, M",
+    save: "Wisdom",
+    description:
+      "召唤 20 尺半径的魔法黑暗球体。生物在回合中首次受到此法术影响时进行 Wisdom 豁免；失败受到 5d6 Psychic 伤害并在其下回合结束前从豁免检定中减去 1d6，成功则伤害减半且不受该减值。黑暗区域会阻挡视线，球体在你每回合开始时远离你移动 10 尺。需要专注。",
+  },
+  {
+    name: "Freedom of Movement",
+    level: "4th",
+    action: "Action",
+    category: ["Buff"],
+    range: "Touch",
+    duration: "1 hour",
+    concentration: false,
+    components: "V, S, M",
+    description:
+      "触碰一个自愿生物。持续期间，目标的移动不受困难地形影响，魔法也不能使其速度降低或使其陷入麻痹/束缚；目标可花费 5 尺移动来自动逃离非魔法束缚，水下移动和攻击也不受通常惩罚影响。",
+  },
+  {
+    name: "Guardian of Faith",
+    level: "4th",
+    action: "Action",
+    category: ["Control", "Attack"],
+    range: "30 ft",
+    duration: "8 hours",
+    concentration: false,
+    components: "V",
+    save: "Dexterity",
+    description:
+      "召唤光辉守护者占据一个未被占据空间。敌对生物首次进入守护者 10 尺范围或在范围内开始回合时进行 Dexterity 豁免，失败受到 20 Radiant 伤害，成功受到一半；守护者累计造成 60 点伤害后消失。",
+  },
+  {
+    name: "Locate Creature",
+    level: "4th",
+    action: "Action",
+    category: ["Utility"],
+    range: "自身",
+    duration: "Concentration, up to 1 hour",
+    concentration: true,
+    components: "V, S, M",
+    description:
+      "描述或命名一个熟悉的生物；若它在 1,000 尺内且符合条件，你会感知其方向。特定遮挡、流水或铅等条件可能阻断效果。需要专注。",
+  },
+  {
+    name: "Stone Shape",
+    level: "4th",
+    action: "Action",
+    category: ["Utility"],
+    range: "Touch",
+    duration: "Instantaneous",
+    concentration: false,
+    components: "V, S, M",
+    description:
+      "触碰一块中型或更小的石头物件或石头部分，将其塑造成粗略形状；不适合制造精细机械部件。",
+  },
+  {
+    name: "Blessed Strikes: Potent Spellcasting",
+    level: "Feature",
+    action: "Other",
+    category: ["Buff"],
+    range: "自身",
+    duration: "被动",
+    description:
+      "牧师 7 级 Blessed Strikes 选项：选择此项后，你造成伤害的任何 Cleric Cantrip 都额外造成等于 Wisdom 调整值的伤害（当前 +4）。若选择此项，不同时获得 Divine Strike。",
+    always: true,
+    nonSelectable: true,
+    triggerOnly: true,
+  },
+  {
+    name: "Blessed Strikes: Divine Strike",
+    level: "Feature",
+    action: "Other",
+    category: ["Attack"],
+    range: "武器攻击命中",
+    duration: "每个自己的回合一次",
+    description:
+      "牧师 7 级 Blessed Strikes 选项：使用武器攻击检定命中时，可额外造成 1d8 Necrotic 或 Radiant 伤害（二选一）。若选择此项，不同时获得 Potent Spellcasting。",
+    always: true,
+    nonSelectable: true,
+    triggerOnly: true,
+  },
+  {
     name: "Core Cleric Traits",
     level: "Feature",
     action: "Other",
@@ -400,10 +579,10 @@ const spells = [
     level: "Feature",
     action: "Other",
     category: ["Healing"],
-    range: "30 ft (Spare the Dying)",
+    range: "15 ft (Spare the Dying)",
     duration: "被动",
     description:
-      "Grave Domain：你可以用 Bonus Action 施放 Spare the Dying（本角色法术卡已设为 Bonus Action、30 ft）。此外，当你用法术或 Channel Divinity 治疗一个 HP 为 0 的生物，若通常要掷一个或多个治疗骰，则每颗骰子都改为取最大值。",
+      "Grave Domain：你可以用 Bonus Action 施放 Spare the Dying（本角色法术卡已设为 Bonus Action、15 ft）。此外，当你用法术或 Channel Divinity 治疗一个 HP 为 0 的生物，若通常要掷一个或多个治疗骰，则每颗骰子都改为取最大值。",
     always: true,
     nonSelectable: true,
     triggerOnly: true,
@@ -1344,7 +1523,7 @@ const spells = [
   },
 ];
 const defaults = {
-  clericLevel: 6,
+  clericLevel: 7,
   wisdom: 4,
   proficiency: 3,
   round: 1,
@@ -1353,8 +1532,8 @@ const defaults = {
   tempHp: 0,
   ac: 18,
   spellSlotCastThisTurn: false,
-  slots: { "1st": 4, "2nd": 3, "3rd": 3 },
-  maxSlots: { "1st": 4, "2nd": 3, "3rd": 3 },
+  slots: { "1st": 4, "2nd": 3, "3rd": 3, "4th": 1 },
+  maxSlots: { "1st": 4, "2nd": 3, "3rd": 3, "4th": 1 },
   channelDivinity: 3,
   featureUses: {},
   concentration: null,
@@ -1482,6 +1661,21 @@ function loadState() {
     const merged = {
       ...defaults,
       ...saved,
+      clericLevel: 7,
+      slots: {
+        ...defaults.slots,
+        ...(saved.slots || {}),
+        "4th": (saved.slots || {}).hasOwnProperty("4th")
+          ? (saved.slots || {})["4th"]
+          : 1,
+      },
+      maxSlots: {
+        ...defaults.maxSlots,
+        ...(saved.maxSlots || {}),
+        "4th": (saved.maxSlots || {}).hasOwnProperty("4th")
+          ? (saved.maxSlots || {})["4th"]
+          : 1,
+      },
       featureUses: {
         ...(defaults.featureUses || {}),
         ...(saved.featureUses || {}),
@@ -1518,7 +1712,7 @@ function editClericLevel() {
   const current = Number.isSafeInteger(Number(state.clericLevel))
     ? Number(state.clericLevel)
     : 6;
-  const raw = prompt("牧师等级：", String(current));
+  const raw = prompt("牧师等级（请输入 1–20 的整数）：", String(current));
   if (raw === null) return;
   const textValue = raw.trim();
   if (!/^(?:[1-9]|1[0-9]|20)$/.test(textValue)) {
@@ -1552,7 +1746,7 @@ function tag(s, cls = "") {
   return `<span class="pill ${cls}">${esc(s)}</span>`;
 }
 function renderSlotBoxes() {
-  const levels = ["1st", "2nd", "3rd"];
+  const levels = ["1st", "2nd", "3rd", "4th"];
   return levels
     .map((level) => {
       const max = Math.max(
@@ -1652,7 +1846,7 @@ function render() {
   document.getElementById("hpMaxText").textContent = state.maxHp;
   document.getElementById("tempHpInline").textContent =
     ` + ${state.tempHp || 0}`;
-  document.getElementById("acText").textContent = `Armor Class ${state.ac}`;
+  document.getElementById("acText").textContent = `AC ${state.ac}`;
   document.getElementById("spellSaveDCText").textContent =
     getComputedStats().spellSaveDC ?? 15;
   const spellAttack = Number.isSafeInteger(
@@ -1731,18 +1925,10 @@ function spellCard(s, selectable = false, phaseKey = null) {
       "9th": "spell-level-9",
     }[s.level] || "spell-level-1",
   );
-  const rangeText = String(s.range || "");
-  const emanationMatch = rangeText.match(
-    /(?:^|\b)(5|15)(?:\s*-\s*ft|\s*-\s*foot|\s*ft|\s*foot)\s+emanation\b/i,
-  );
-  const translatedRange = emanationMatch
-    ? `自身 ${emanationMatch[1]} ft 球型`
-    : null;
   const cardRange =
     s.combatAction && /^依/.test(String(s.range || ""))
       ? ""
-      : translatedRange ||
-        {
+      : {
           Touch: "接触",
           自身: "自身",
           "自身 (15-foot cone)": "自身（15尺锥形）",
@@ -1750,14 +1936,6 @@ function spellCard(s, selectable = false, phaseKey = null) {
           "自身 (60-foot line)": "自身（60尺直线）",
           "自身 (10-foot radius)": "自身（10尺半径）",
           "自身 (5-foot radius)": "自身（5尺半径）",
-          "5-ft emanation": "5 ft 球型",
-          "5-foot emanation": "5 ft 球型",
-          "5 ft emanation": "5 ft 球型",
-          "5 foot emanation": "5 ft 球型",
-          "15-ft emanation": "15 ft 球型",
-          "15-foot emanation": "15 ft 球型",
-          "15 ft emanation": "15 ft 球型",
-          "15 foot emanation": "15 ft 球型",
         }[s.range] ||
         s.range ||
         "未注明";
@@ -1768,15 +1946,11 @@ function spellCard(s, selectable = false, phaseKey = null) {
         ? {
             Instantaneous: "即时",
             "1 round": "1回合",
-            "1 round (攻击优势效果)": "1回合（攻击优势效果）",
             "1 minute": "1分钟",
-            "up to 1 minute": "最长1分钟",
-            "Up to 1 minute": "最长1分钟",
             "10 minutes": "10分钟",
             "1 hour": "1小时",
             "8 hours": "8小时",
             "24 hours": "24小时",
-            "10 days": "10天",
             "Until dispelled": "直到被解除",
             "Concentration, up to 1 minute": "最长1分钟",
             "Concentration, up to 10 minutes": "最长10分钟",
@@ -1786,25 +1960,15 @@ function spellCard(s, selectable = false, phaseKey = null) {
           String(s.duration)
             .replace(/^Concentration,?\\s*/i, "")
             .replace(/^专注[，]?\\s*/, "")
-            .replace(/^up to\\s+1\\s+minute$/i, "最长1分钟")
-            .replace(/^10\\s+days?$/i, (m) =>
-              m.toLowerCase() === "10 days" ? "10天" : "10天",
-            )
             .replace(/^1\\s*round\\b/i, "1回合")
         : "";
-  const displayCardDuration =
-    /until start of next turn|直到你下回合开始|通常到你下回合开始|本回合/i.test(
-      String(s.duration || ""),
-    )
-      ? "1回合"
-      : cardDuration;
   const usageHint =
     s.resource === "Channel Divinity"
       ? ` · 剩余次数 ${Math.max(0, Math.min(3, Number(state.channelDivinity) || 0))}`
       : s.usesPerLongRest
         ? ` · 剩余次数 ${Math.max(0, s.usesPerLongRest - Number(state.featureUses?.[s.name] || 0))}`
         : "";
-  const levelText = `<div class="spell-card-title"><strong>${esc(s.name)}</strong>${titleLevel}${s.concentration ? tag("专注", "concentration-card-pill") : ""}</div><div class="meta spell-card-hint">${cardRange ? `<span>${esc(cardRange)}</span>` : ""}${displayCardDuration ? `<span>${cardRange ? "· " : ""}${esc(displayCardDuration)}</span>` : ""}${usageHint ? `<span>${cardRange || cardDuration ? "· " : ""}${esc(usageHint.replace(/^\s*·\s*/, ""))}</span>` : ""}</div>`;
+  const levelText = `<div class="spell-card-title"><strong>${esc(s.name)}</strong>${titleLevel}${s.concentration ? tag("专注", "concentration-card-pill") : ""}</div><div class="meta spell-card-hint">${cardRange ? `<span>${esc(cardRange)}</span>` : ""}${cardDuration ? `<span>${cardRange ? "· " : ""}${esc(cardDuration)}</span>` : ""}${usageHint ? `<span>${cardRange || cardDuration ? "· " : ""}${esc(usageHint.replace(/^\s*·\s*/, ""))}</span>` : ""}</div>`;
   const escapedName = s.name.replace(/'/g, "\\'");
   if (selectable) {
     const cardClass = `spell library-selectable${isAlwaysPrepared ? " always-prepared-card" : ""}${isPrepared ? " prepared-selected" : ""}`;
@@ -1939,7 +2103,7 @@ function renderSpells() {
 function spellSlotOptions(s) {
   if (s.level === "Cantrip" || s.level === "Feature")
     return `<div class="effect"><strong>不消耗法术位</strong><p>戏法 / 职业能力不使用法术位。</p></div>`;
-  const levels = ["1st", "2nd", "3rd"];
+  const levels = ["1st", "2nd", "3rd", "4th"];
   const base = levels.indexOf(s.level);
   const choices = levels.slice(base).filter((l) => (state.slots[l] || 0) > 0);
   if (!choices.length)
@@ -1994,8 +2158,15 @@ function showDecisionSpell(name, phase) {
     toast(`请切换到 ${phaseLabel(actualPhase)} 阶段使用该技能`);
     return;
   }
-  // Always open the spell page for inspection. If the phase or spell-slot
-  // limit has already been used, the Cast button will be dimmed with feedback.
+  if (
+    phaseAlreadyUsed(actualPhase) &&
+    !(s && usesSpellSlot(s) && state.spellSlotCastThisTurn)
+  ) {
+    toast(`${phaseLabel(actualPhase)} 阶段已使用过技能`);
+    return;
+  }
+  // If a slot spell was already cast this turn, still open its modal so the
+  // user can see the dimmed Cast button and the specific spell-slot rule message.
   showSpell(name);
 }
 function phaseForSpell(s) {
@@ -2031,20 +2202,8 @@ function usesSpellSlot(s) {
     s.resource !== "Channel Divinity"
   );
 }
-function blockedSpellCast(name) {
-  const s = spells.find((x) => x.name === name);
-  if (s) {
-    const phase = phaseForSpell(s);
-    if (phaseAlreadyUsed(phase)) {
-      toast(`${phaseLabel(phase)} 阶段已使用行动`);
-      return;
-    }
-    if (usesSpellSlot(s) && state.spellSlotCastThisTurn) {
-      toast("本回合已施放法术");
-      return;
-    }
-  }
-  toast("该技能当前不可施放");
+function blockedSpellCast() {
+  toast("本回合已施放法术");
 }
 function spellRollInfo(s) {
   const desc = String(s.description || "");
@@ -2138,7 +2297,7 @@ function spellRollInfo(s) {
     ? Number(getComputedStats().spellAttack)
     : 7;
   const attackText = attackType
-    ? `Wisdom ${attackBonus >= 0 ? "+" : ""}${attackBonus}（d20 ${attackBonus >= 0 ? "+ " : "− "}${Math.abs(attackBonus)}）${effectiveDamageDice ? ` · 命中伤害 ${effectiveDamageDice}` : ""}`
+    ? `Wisdom ${attackBonus >= 0 ? "+" : ""}${attackBonus}（d20 ${attackBonus >= 0 ? "+ " : "− "}${Math.abs(attackBonus)}）${effectiveDamageDice ? ` · 命中伤害骰 ${effectiveDamageDice}` : ""}`
     : "—";
   return { saveText, attackText, damageTypeText };
 }
@@ -2146,13 +2305,10 @@ function showSpell(name, mode = "cast") {
   const s = spells.find((x) => x.name === name);
   if (!s) return;
   const libraryMode = mode === "library";
-  const modalType = document.getElementById("modalType");
-  modalType.textContent = "";
+  document.getElementById("modalType").textContent = `${s.level} · ${s.action}`;
   const modalTitle = document.getElementById("modalTitle");
-  const modalInfo = spellRollInfo(s);
-  const modalDamageType = modalInfo.damageTypeText;
-  const modalLevel = s.level === "Cantrip" ? "Cantrip" : s.level;
-  modalTitle.innerHTML = `${esc(s.name)} <span class="modal-title-meta">${esc(modalLevel)}${modalDamageType ? ` · ${esc(modalDamageType)}` : ""}</span>`;
+  const modalDamageType = spellRollInfo(s).damageTypeText;
+  modalTitle.innerHTML = `${esc(s.name)}${modalDamageType ? ` <span class="spell-damage-type">${esc(modalDamageType)}</span>` : ""}`;
   const currentConcentrationEffect = state.concentration
     ? state.effects.find((e) => e.name === state.concentration.name)
     : null;
@@ -2185,13 +2341,10 @@ function showSpell(name, mode = "cast") {
     document.getElementById("modalBody").innerHTML =
       `${details}<div class="rule"></div><div class="spell-modal-actions">${actions}</div>`;
   } else {
-    const castBlockedPhase = phaseForSpell(s);
-    const phaseBlocked = phaseAlreadyUsed(castBlockedPhase);
-    const slotBlocked = usesSpellSlot(s) && state.spellSlotCastThisTurn;
     const castButton = s.triggerOnly
       ? `<button onclick="closeModal()">关闭</button>`
-      : phaseBlocked || slotBlocked
-        ? `<button class="primary spell-cast-blocked" aria-disabled="true" title="${phaseBlocked ? `${phaseLabel(castBlockedPhase)} 阶段已使用行动` : "本回合已施放法术"}" onclick="blockedSpellCast('${s.name.replace(/'/g, "\\'")}')">施放</button>`
+      : usesSpellSlot(s) && state.spellSlotCastThisTurn
+        ? `<button class="primary spell-cast-blocked" aria-disabled="true" title="本回合已施放法术" onclick="blockedSpellCast()">施放</button>`
         : `<button class="primary" onclick="applySpell('${s.name.replace(/'/g, "\\'")}')">施放</button>`;
     document.getElementById("modalBody").innerHTML =
       `${details}<div class="rule"></div>${spellSlotOptions(s)}${concentrationNotice}<div class="spell-modal-actions">${castButton}${s.triggerOnly ? "" : `<button onclick="closeModal()">取消</button>`}</div>`;
@@ -2286,7 +2439,7 @@ function applySpell(name) {
   const phase = phaseForSpell(s);
   if (phaseAlreadyUsed(phase)) {
     closeModal();
-    toast(`${phaseLabel(phase)} 阶段已使用行动`);
+    toast(`${phaseLabel(phase)} 阶段已使用过技能`);
     return;
   }
   // The modal warns about concentration replacement before the user clicks Cast.
@@ -2304,7 +2457,7 @@ function applySpell(name) {
   // Spend the selected slot, which may be higher than the spell's base level.
   const castSlot = selectedSlotFor(s);
   if (castSlot) {
-    const order = ["1st", "2nd", "3rd"];
+    const order = ["1st", "2nd", "3rd", "4th"];
     if (order.indexOf(castSlot) < order.indexOf(s.level)) {
       alert("不能使用低于法术基础环级的法术位。");
       return;
@@ -2384,57 +2537,6 @@ function toggleResource(k) {
   state.resources[k] = !state.resources[k];
   save();
 }
-let pendingConfirmationAction = null;
-function showFullScreenConfirmation(title, message, confirmLabel, onConfirm) {
-  const backdrop = document.getElementById("resetConfirmBackdrop");
-  document.getElementById("resetConfirmTitle").textContent = title;
-  document.getElementById("resetConfirmMessage").textContent = message;
-  document.getElementById("confirmResetTurn").textContent = confirmLabel;
-  pendingConfirmationAction = onConfirm;
-  if (backdrop) backdrop.classList.add("open");
-}
-function requestResetTurn() {
-  showFullScreenConfirmation(
-    "确认重置回合？",
-    "本回合的资源使用状态、法术位变化及新增战斗效果将按回合开始状态重置。",
-    "确认重置",
-    resetTurn,
-  );
-}
-function requestStartTurn() {
-  showFullScreenConfirmation(
-    `确认开始第${state.round + 1}回合？`,
-    `确认后将进入第${state.round + 1}回合，并推进所有按回合计时的战斗效果。请确认当前回合的行动已经结束。`,
-    "开始回合",
-    nextTurn,
-  );
-}
-function requestShortRest() {
-  showFullScreenConfirmation(
-    "确认开始短休？",
-    "确认后将进行短休：恢复 1 次 Channel Divinity，并结束按回合计时的战斗效果。随后可以输入通过生命骰恢复的 HP 总量。",
-    "开始短休",
-    shortRest,
-  );
-}
-function requestLongRest() {
-  showFullScreenConfirmation(
-    "确认开始长休？",
-    "确认后将进行长休：恢复 HP、全部法术位和 Channel Divinity，结束当前专注，并清除有回合计时的战斗效果。",
-    "开始长休",
-    longRest,
-  );
-}
-function cancelResetTurn() {
-  const backdrop = document.getElementById("resetConfirmBackdrop");
-  if (backdrop) backdrop.classList.remove("open");
-  pendingConfirmationAction = null;
-}
-function confirmResetTurn() {
-  const action = pendingConfirmationAction;
-  cancelResetTurn();
-  if (typeof action === "function") action();
-}
 function resetTurn() {
   state.spellSlotCastThisTurn = false;
   state.effects = JSON.parse(JSON.stringify(state.turnStartEffects || []));
@@ -2458,6 +2560,12 @@ function resetTurn() {
   toast("本回合资源、法术位与新增效果已重置");
 }
 function shortRest() {
+  if (
+    !confirm(
+      "开始短休？短休会恢复 1 次 Channel Divinity，并结束按回合计时的战斗效果。你可以输入短休期间通过生命骰恢复的 HP 总量。",
+    )
+  )
+    return;
   state.spellSlotCastThisTurn = false;
   const heal = askNonNegativeInteger(
     "短休期间通过生命骰恢复的 HP 总量（没有就输入 0）",
@@ -2486,6 +2594,12 @@ function shortRest() {
   );
 }
 function longRest() {
+  if (
+    !confirm(
+      "开始长休？将恢复 HP、全部法术位和 Channel Divinity，结束专注，并清除有回合计时的战斗效果。",
+    )
+  )
+    return;
   state.hp = state.maxHp;
   state.tempHp = 0;
   state.spellSlotCastThisTurn = false;
@@ -2546,7 +2660,10 @@ function nextTurn() {
 }
 
 function askNonNegativeInteger(label, defaultValue, minimum = 0) {
-  const raw = prompt(`${label}：`, String(defaultValue ?? 0));
+  const raw = prompt(
+    `${label}（请输入${minimum > 0 ? `不小于 ${minimum} 的` : "非负"}整数）：`,
+    String(defaultValue ?? 0),
+  );
   if (raw === null) return null;
   const valueText = raw.trim();
   if (!/^(0|[1-9][0-9]*)$/.test(valueText)) {
@@ -2555,7 +2672,7 @@ function askNonNegativeInteger(label, defaultValue, minimum = 0) {
   }
   const value = Number(valueText);
   if (!Number.isSafeInteger(value) || value < minimum) {
-    alert(`输入无效：必须是不小于 ${minimum} 的有效整数。`);
+    alert(`输入无效：请输入不小于 ${minimum} 的有效整数。`);
     return null;
   }
   return value;
@@ -2579,7 +2696,7 @@ function clearConcentration() {
 function addEffect() {
   const name = prompt("效果名称（法术 / Buff / Debuff）：");
   if (name === null || !name.trim()) return;
-  const roundsInput = prompt("剩余回合数：");
+  const roundsInput = prompt("剩余回合数（必须为大于 0 的整数）：");
   if (roundsInput === null) return;
   const roundsText = roundsInput.trim();
   if (!/^[1-9][0-9]*$/.test(roundsText)) {
@@ -2588,7 +2705,7 @@ function addEffect() {
   }
   const rounds = Number(roundsText);
   if (!Number.isSafeInteger(rounds) || rounds <= 0) {
-    alert("时长无效：必须是大于 0 的有效整数。未添加效果。");
+    alert("时长无效：请输入有效的大于 0 的整数。未添加效果。");
     return;
   }
   const note = prompt("备注（可选）：") || "";
@@ -2657,7 +2774,7 @@ function adjustHPByInput(direction) {
   const input = document.getElementById("hpAmount");
   const amount = Math.max(0, Math.floor(Number(input?.value) || 0));
   if (amount <= 0) {
-    toast("数值必须大于 0");
+    toast("请输入大于 0 的数值");
     return;
   }
   if (direction < 0) {
@@ -2680,7 +2797,10 @@ function editSignedStat(key, label) {
   const current = Number.isSafeInteger(Number(state[key]))
     ? Number(state[key])
     : 0;
-  const raw = prompt(`${label} 加值：`, String(current));
+  const raw = prompt(
+    `${label} 加值（请输入 -99 到 99 之间的整数）：`,
+    String(current),
+  );
   if (raw === null) return;
   const textValue = raw.trim();
   if (!/^[+-]?(0|[1-9][0-9]*)$/.test(textValue)) {
@@ -2689,7 +2809,7 @@ function editSignedStat(key, label) {
   }
   const value = Number(textValue);
   if (!Number.isSafeInteger(value) || value < -99 || value > 99) {
-    alert("输入无效：必须是 -99 到 99 之间的整数。");
+    alert("输入无效：请输入 -99 到 99 之间的整数。");
     return;
   }
   state[key] = value;
@@ -2770,37 +2890,17 @@ document.getElementById("toggleAllSpells").addEventListener("keydown", (e) => {
   }
 });
 
-document
-  .getElementById("shortRestBtn")
-  .addEventListener("click", requestShortRest);
-document
-  .getElementById("longRestBtn")
-  .addEventListener("click", requestLongRest);
-document.getElementById("nextTurn").addEventListener("click", requestStartTurn);
-document
-  .getElementById("resetTurn")
-  .addEventListener("click", requestResetTurn);
-document
-  .getElementById("cancelResetTurn")
-  .addEventListener("click", cancelResetTurn);
-document
-  .getElementById("confirmResetTurn")
-  .addEventListener("click", confirmResetTurn);
-document
-  .getElementById("resetConfirmBackdrop")
-  .addEventListener("click", (e) => {
-    if (e.target.id === "resetConfirmBackdrop") cancelResetTurn();
-  });
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") cancelResetTurn();
-});
+document.getElementById("shortRestBtn").addEventListener("click", shortRest);
+document.getElementById("longRestBtn").addEventListener("click", longRest);
+document.getElementById("nextTurn").addEventListener("click", nextTurn);
+document.getElementById("resetTurn").addEventListener("click", resetTurn);
 document.getElementById("modalBackdrop").addEventListener("click", (e) => {
   if (e.target.id === "modalBackdrop") closeModal();
 });
 document.getElementById("hpAmount").addEventListener("input", (e) => {
   const v = e.target.value;
   if (v !== "" && !/^(0|[1-9][0-9]*)$/.test(v))
-    e.target.setCustomValidity("必须是非负整数");
+    e.target.setCustomValidity("请输入非负整数");
   else e.target.setCustomValidity("");
 });
 document.getElementById("hpAmount").addEventListener("change", (e) => {
@@ -2812,7 +2912,7 @@ document.getElementById("hpAmount").addEventListener("change", (e) => {
     Number(el.value) < 1
   ) {
     el.value = "1";
-    el.setCustomValidity("必须是大于 0 的整数");
+    el.setCustomValidity("请输入大于 0 的整数");
     el.reportValidity();
   } else el.setCustomValidity("");
 });

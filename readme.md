@@ -3,6 +3,8 @@ Copyright 2026 Linus Guo
 
 Email: guolinus@gmail.com
 
-**!! Last update: October 2026 !!**
+**!! Last update: Oct 17 2026 !!**
 
-Cleric · Grave Domain · Lv. 6
+Cleric · Grave Domain · Lv. 7
+
+Lv7 updates: Level 4 spells
