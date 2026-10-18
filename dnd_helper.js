@@ -397,7 +397,7 @@ const spells = [
     name: "Banishment",
     level: "4th",
     action: "Action",
-    category: ["Control"],
+    category: ["Debuff"],
     range: "30 ft",
     duration: "Concentration, up to 1 minute",
     concentration: true,
